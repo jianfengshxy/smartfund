@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS `smartfund_user`(
 `tt_password` CHAR(32) NOT NULL COMMENT '天天基金密码',
 `tt_pay_password` CHAR(32) NOT NULL COMMENT '天天基金支付密码',
 `group_name` CHAR(32) NOT NULL DEFAULT  '基础账户资产' COMMENT '基金组合',
-`user_grade` VARCHAR(50) NOT NULL DEFAULT 'beijing' COMMENT '用户等级',
+`user_grade` VARCHAR(50) NOT NULL DEFAULT 'S1' COMMENT '用户等级',
 `device` VARCHAR(20) NOT NULL DEFAULT  'SJE0217722000066'  COMMENT '绑定设备号',
 `status` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '0代表冻结，1代表有效',
 `effective_date` DATE NOT NULL DEFAULT '2022-12-30' COMMENT '有效日期'
