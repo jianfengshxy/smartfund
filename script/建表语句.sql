@@ -14,13 +14,14 @@ CREATE TABLE IF NOT EXISTS `smartfund_user`(
 )ENGINE=INNODB DEFAULT CHARSET=UTF8
 
 
+
 CREATE TABLE IF NOT EXISTS `fund_asset`(
  `id` INT UNSIGNED AUTO_INCREMENT KEY COMMENT '唯一id',
  `fund_code` VARCHAR(20) NOT NULL   COMMENT '基金代码',
- `date` DATE NOT NULL  COMMENT '日期'
+ `date` DATE NOT NULL  COMMENT '日期',
  `tel` CHAR(32) NOT NULL COMMENT '持有人电话',
- `fund_unit` CHAR(11)  NOT NULL DEFAULT 0  COMMENT  '全部份额',
- `fund_valid_unit` CHAR(11)  NOT NULL DEFAULT 0  '可用份额',
- `income` VARCHAR(50) NOT NULL DEFAULT 0 COMMENT '持有收益',
- `income_rate` VARCHAR(50) NOT NULL DEFAULT 0 COMMENT '持有收益率'
+ `fund_unit` INT   NOT NULL DEFAULT  0  COMMENT  '全部份额',
+ `fund_valid_unit` INT   NOT NULL DEFAULT 0  COMMENT  '可用份额',
+ `income` INT   NOT NULL DEFAULT 0 COMMENT '持有收益',
+ `income_rate` INT  NOT NULL DEFAULT 0 COMMENT '持有收益率'
 )ENGINE=INNODB DEFAULT CHARSET=UTF8
