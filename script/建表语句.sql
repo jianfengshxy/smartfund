@@ -13,7 +13,8 @@ CREATE TABLE IF NOT EXISTS `smartfund_user`(
 `effective_date` DATE NOT NULL DEFAULT '2022-12-30' COMMENT '有效日期'
 )ENGINE=INNODB DEFAULT CHARSET=UTF8
 
-
+insert into `smartfund_user`( `username` , `password` , `tel` , `email` , `tt_password` , `tt_pay_password` )
+values('jianfengshxy','sWX15706','13918199137','13918199137@139.com','sWX15706','sWX15706')
 
 CREATE TABLE IF NOT EXISTS `fund_asset`(
  `id` INT UNSIGNED AUTO_INCREMENT KEY COMMENT '唯一id',
@@ -26,8 +27,7 @@ CREATE TABLE IF NOT EXISTS `fund_asset`(
  `income_rate` INT  NOT NULL DEFAULT 0 COMMENT '持有收益率'
 )ENGINE=INNODB DEFAULT CHARSET=UTF8
 
-insert into `smartfund_user`( `username` , `password` , `tel` , `email` , `tt_password` , `tt_pay_password` )
-values('jianfengshxy','sWX15706','13918199137','13918199137@139.com','sWX15706','sWX15706')
+
 
 
 CREATE TABLE IF NOT EXISTS `user_plan`(
@@ -37,8 +37,10 @@ CREATE TABLE IF NOT EXISTS `user_plan`(
  `total` INT NOT NULL   DEFAULT 0  COMMENT '总的定投次数',
  `current_buy_number` INT NOT NULL   DEFAULT 0  COMMENT '当前期数',
  `start_date` DATE NOT NULL   COMMENT '当前定投开始的时间',
- `base_invest` INT   NOT NULL DEFAULT 0  COMMENT  '定投基数',
- `percentage` INT   NOT NULL DEFAULT 0  COMMENT  '止盈百分比',
-  `ratio` INT   NOT NULL DEFAULT 1 COMMENT '定投系数'
+ `base_invest` INT   NOT NULL DEFAULT 1000  COMMENT  '定投基数',
+ `percentage` INT   NOT NULL DEFAULT 5  COMMENT  '止盈百分比',
+  `ratio` INT   NOT NULL DEFAULT 1 COMMENT '定投系数',
+ `status` VARCHAR(20) NOT NULL  DEFAULT 'on'  COMMENT '定投状态'
 )ENGINE=INNODB DEFAULT CHARSET=UTF8
-
+insert into `user_plan`( `fund_code` , `tel` , `start_date` )
+values('001618','13918199137','2021-01-07')
