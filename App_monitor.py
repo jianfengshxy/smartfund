@@ -43,8 +43,8 @@ def login_to_main(username,password):
     if(poco("com.eastmoney.android.fund:id/f_dialog_account_login").exists()):
           poco("com.eastmoney.android.fund:id/f_dialog_account_login").click()
     #############
-    poco("com.eastmoney.android.fund:id/edittext_username_2").set_text("321111198405315315")
-    poco("com.eastmoney.android.fund:id/edittext_password_2").set_text("sWX15706")
+    poco("com.eastmoney.android.fund:id/edittext_username_2").set_text(username)
+    poco("com.eastmoney.android.fund:id/edittext_password_2").set_text(password)
     poco("com.eastmoney.android.fund:id/button_login").click()
     sleep(1)
     #-----------------------------------------------------------------------------------------------
@@ -62,8 +62,55 @@ def login_to_main(username,password):
 #         sleep(1)
 
 
+ 
     
+ ####已经进入基金持有界面，进行卖出操作
+ ####返回是否从“卖出”退出，sell_exit决定了返回到不同页面
     
+def sell_fund(fund_code,handled_fund):    
+#        print("enter the function sell_fund")
+       sleep(1)
+       ##### 如果基金不支持赎回，直接跳过
+       if(poco("暂停赎回").exists()):
+             print("暂停赎回")
+             handled_fund = handled_fund + (fund_code,) 
+             return  (False,handled_fund)
+#        ##### 如果基金可用份额为0.0，直接跳过  
+#        if(poco("0.00").wait(5).exists()):
+#              print("0.00")
+#              handled_fund = handled_fund + (fund_code,)
+#              return  (False,handled_fund)
+        
+#        print(fund_code + "****************************")
+       if(poco("卖出/转换").wait(30).exists()):
+#            print("卖出/转换")
+           poco("卖出/转换").click()
+       if(group_name != "基础账户资产"):
+             poco(group_name).wait(30).click()                     
+             poco("从组合中卖出").wait(30).click()
+       if(poco("回活期宝").wait(30).exists()):
+                poco("回活期宝").click()
+       else:
+                handled_fund = handled_fund + (fund_code,)
+                return  (False,handled_fund)     
+       if(poco("该基金交易规则特殊，暂不支持极速赎回充值活期宝。").exists()):
+                     poco("普通").wait(30).click() 
+       else:
+                     poco("极速").wait(30).click()
+                              
+       poco("全部").wait(30).click()
+       if(poco("同意协议并提交").exists()):
+                     poco("同意协议并提交").click()
+       if(poco("继续卖出").wait(10).exists()):
+                     poco("继续卖出").click()
+       if(poco("确认").exists()):
+                     poco("确认").click()
+       poco("com.eastmoney.android.fund:id/et_pwd").wait(10).set_text("sWX15706")
+       poco("com.eastmoney.android.fund:id/btn_comfirm").wait(10).click()
+       poco(text="完成").click()
+       handled_fund = handled_fund + (fund_code,)
+       return (True,handled_fund)
+#############################################################################        
 
 def fund_group(group_name):
     # 进入“组合”页面
@@ -73,19 +120,25 @@ def fund_group(group_name):
     while(not poco(group_name).wait(5).exists() and not poco("了解组合").exists()):
          poco("android.widget.ScrollView").swipe('up')
          poco("android.widget.ScrollView").swipe('up')
+         poco("android.widget.ScrollView").swipe('up')
+         poco("android.widget.ScrollView").swipe('up')
      
     #####有可能基础账户不存在，
     if(poco(group_name).exists()):
             poco(group_name).click() 
- 
-    
+            return True
+    else:
+            print(group_name + "不存在")
+            return False    
               
  
-def  sell_group_fund(group_name):  
-    
-#####可能账户不存在，没进入组合页面，直接退出
-    if(not poco("group_name").exists()):
-                          return
+def  sell_group_fund(group_name):    
+    if(poco("暂停赎回").exists()):
+              print("暂停赎回")
+              poco(name="com.eastmoney.android.fund:id/nav_tv").wait_for_appearance(60)
+              poco(name="com.eastmoney.android.fund:id/nav_tv").click()
+              handled_fund = handled_fund + (fund_code,) 
+            
 # 记录已经处理的基金，因为赎回基金后回跳出组合，导致没有办法在原来的顺序上继续，
 # 必须记录已经处理过的基金，加快速度
 #
@@ -118,66 +171,29 @@ def  sell_group_fund(group_name):
                 
                 
        ####更新数据库数据
-       
+                sleep(5)
+#                 for fund_info  in  poco(nameMatches="[+-]*\d*\.\d*%"):
+#                           print("fund_info:" + fund_info.get_name())
     
-    
-       ####结束更新        
-       ##### 如果基金不支持赎回，直接跳过
-                if(poco("暂停赎回").exists()):
-                         print("暂停赎回")
-                         poco(name="com.eastmoney.android.fund:id/nav_tv").wait_for_appearance(60)
-                         poco(name="com.eastmoney.android.fund:id/nav_tv").click()
-                         handled_fund = handled_fund + (fund_code,) 
-                         sell_exit = False
-                         continue
-       ##### 如果基金可用份额为0.0，直接跳过    
-                if(poco("0.00").wait(5).exists()):
+       #####结束更新
+           
+
+                (sell_exit,handled_fund) = sell_fund(fund_code,handled_fund)
+                if(not sell_exit):
                         poco(name="com.eastmoney.android.fund:id/nav_tv").wait_for_appearance(60)
                         poco(name="com.eastmoney.android.fund:id/nav_tv").click()
-                        handled_fund = handled_fund + (fund_code,)
-                        sell_exit = False
-                        continue          
-                hold_rate = poco(nameMatches="[+-]*\d*\.\d*%")[2].get_name()
-                print("持有收益率" + hold_rate.replace("%",""))     
-                ####这里应该课配置，读取数据库获取实时止盈比例
-                if( float(hold_rate.replace("%","")) > 3.0):    
-                       poco("卖出/转换").wait(30).click()
-                       if(group_name != "基础账户资产"):
-                             poco(group_name).wait(30).click()                     
-                             poco("从组合中卖出").wait(30).click()
-                       poco("回活期宝").wait(30).click()
-                       if(poco("该基金交易规则特殊，暂不支持极速赎回充值活期宝。").exists()):
-                            poco("普通").wait(30).click() 
-                       else:
-                            poco("极速").wait(30).click()
-                              
-
-                       poco("全部").wait(30).click()
-                       if(poco("同意协议并提交").exists()):
-                            poco("同意协议并提交").click()
-                       if(poco("继续卖出").wait(10).exists()):
-                                poco("继续卖出").click()
-                       if(poco("确认").exists()):
-                              poco("确认").click()
-                       poco("com.eastmoney.android.fund:id/et_pwd").wait(10).set_text("sWX15706")
-                       poco("com.eastmoney.android.fund:id/btn_comfirm").wait(10).click()
-                       poco(text="完成").click()
-                       handled_fund = handled_fund + (fund_code,)                                          
+                        continue                    
+                else:
                        to_end = False
-                       sell_exit = True
                        fund_group(group_name)
-                       break
-                else:                                      
-                      ##返回基金组合页面
-                       sell_exit = False
-                       handled_fund = handled_fund + (fund_code,) 
-                       poco(name="com.eastmoney.android.fund:id/nav_tv").wait_for_appearance(60)
-                       poco(name="com.eastmoney.android.fund:id/nav_tv").click()   
+
+#                        poco(name="com.eastmoney.android.fund:id/nav_tv").wait_for_appearance(60)
+#                        poco(name="com.eastmoney.android.fund:id/nav_tv").click()   
                        ################                        
                        #####移动基金组合页面进行遍历  
 #                        print("159 sell_exit " + str(sell_exit))
-                       x1,y1=poco("androidx.recyclerview.widget.RecyclerView").get_size()
-                       poco("androidx.recyclerview.widget.RecyclerView").swipe([-x1/2,-y1/2])       
+                x1,y1=poco("androidx.recyclerview.widget.RecyclerView").get_size()
+                poco("androidx.recyclerview.widget.RecyclerView").swipe([-x1/2,-y1/2])       
                        ########################### 
         
 
@@ -210,7 +226,7 @@ def buy_group_fund():
     poco("android.widget.LinearLayout").offspring("com.eastmoney.android.fund:id/mini_fragment_container_id").offspring("com.eastmoney.android.fund:id/container").child("android.widget.FrameLayout").child("android.widget.FrameLayout").child("android.widget.FrameLayout")[0].child("android.widget.FrameLayout").offspring("android.widget.ImageView")[0].click()
 
     
-def bussiness_logic(username,password): 
+def bussiness_logic(username,password,group_name): 
     print("bussiness_logic")
 # ####输入用户名密码，从开启APP到登录到个人资产页面
     login_to_main(username,password)
@@ -218,8 +234,9 @@ def bussiness_logic(username,password):
 # # 进入基金
     if(poco("基金").wait(30).exists()):
         poco("基金").click()  
-    fund_group("基础账户资产")
-#     sell_group_fund("基础账户资产")
+    if( not fund_group(group_name)):
+        return False
+    sell_group_fund(group_name)
 
 # ##卖完基金，无发确定终点，直接重启App进入购买流程
 # ####输入用户名密码，从开启APP到登录到个人资产页面
@@ -227,18 +244,21 @@ def bussiness_logic(username,password):
 #     poco.swipe([0.1574074074074074, 0.8197916666666667],[0.4537037037037037, 0.1421875])
 #     buy_group_fund()    
 
-device_url="SJE0217722000066"
 
-if(len(sys.argv) > 4):
-    device_url = sys.argv[4]
-#     print("device_url:" + device_url)
+device_id = ''
+for i  in sys.argv:
+    if(i.startswith('android:')):
+            device_id = re.sub(r'\?.*$',"", i.split('/')[-1]).split("?")[0]
+    
+
     
 #在用户表中用户和设备ID绑定 
-device_id = re.sub(r'\?.*$',"", device_url.split('/')[-1]).split("?")[0]
 
 
 
-auto_setup(__file__, logdir=True, devices=["android://127.0.0.1:5037/"+device_id+"?cap_method=MINICAP&&ori_method=MINICAPORI&&touch_method=MINITOUCH",], project_root="/Users/shixiaoyu/Downloads/OneDrive/App_monitor.air")
+
+# auto_setup(__file__, logdir=True, devices=["android://127.0.0.1:5037/"+ device_id+"?cap_method=MINICAP&&ori_method=MINICAPORI&&touch_method=MINITOUCH"], project_root="/Users/shixiaoyu/Downloads/OneDrive/App_monitor.air")
+auto_setup(__file__, logdir=True, devices=["android://127.0.0.1:5037/SJE0217722000066?cap_method=MINICAP&&ori_method=MINICAPORI&&touch_method=MINITOUCH"], project_root="/Users/shixiaoyu/Downloads/OneDrive/App_monitor.air")
 #auto_setup(__file__,devices=["android://127.0.0.1:5037/127.0.0.1:SJE0217722000066"])
 # auto_setup(__file__)
 poco = AndroidUiautomationPoco(use_airtest_input=True, screenshot_each_action=False)    
@@ -247,9 +267,14 @@ poco = AndroidUiautomationPoco(use_airtest_input=True, screenshot_each_action=Fa
 ###查询数据库找出所有用户，进行遍历业务处理
 #########    
 # print_db() 
-for x in get_result():    
-     print(x)
-
-bussiness_logic("321111198405315315","sWX15706")
+for x in get_users_info(device_id):  
+     print("##############")
+     tel = x[3] 
+     password = x[5]
+     group_name = x[7]
+     print("tel:"+tel)
+     print("password" + password)
+     print("group_name" + group_name)
+     bussiness_logic(tel,password,group_name)
 
 
